@@ -1,10 +1,16 @@
 package mans.firstapp;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -13,14 +19,15 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.ArrayList;
+import java.util.List;
+
+import mans.firstapp.models.UserModel;
+
 public class MainActivity extends AppCompatActivity
 {
-    NumberPicker numberPicker;
-    CheckBox chocolateCheck,caramelCheck;
-    EditText nameField;
-    Button orderBtn;
-
-    int cups = 0, type = 0, chocolate = 0, caramel = 0, result = 0;
+    RecyclerView recyclerView;
+    List<UserModel> userModelList = new ArrayList<>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -33,74 +40,84 @@ public class MainActivity extends AppCompatActivity
 
     private void initViews()
     {
-        numberPicker = findViewById(R.id.number_picker);
-        chocolateCheck = findViewById(R.id.chocolate_cb);
-        caramelCheck = findViewById(R.id.caramel_cb);
-        nameField = findViewById(R.id.name_field);
-        orderBtn = findViewById(R.id.order_btn);
+        recyclerView = findViewById(R.id.user_recycler);
 
-        numberPicker.setMaxValue(10);
-        numberPicker.setMinValue(0);
+        userModelList.add(new UserModel("Ahmed", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Ali", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Muhammed", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Abdullah", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Abdo", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Mansour", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Ahmed", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Ali", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Muhammed", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Abdullah", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Abdo", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Mansour", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Ahmed", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Ali", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Muhammed", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Abdullah", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Abdo", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Mansour", "Ahmed@gmail.com"));
 
-        orderBtn.setOnClickListener(new View.OnClickListener()
-        {
-            @Override
-            public void onClick(View v)
-            {
-                if(chocolateCheck.isChecked())
-                {
-                    chocolate = 5;
-                } else
-                    {
-                        chocolate = 0;
-                    }
-
-                if(caramelCheck.isChecked())
-                {
-                    caramel = 3;
-                } else
-                    {
-                        caramel = 0;
-                    }
-
-                String name = nameField.getText().toString();
-
-                if (name.isEmpty())
-                {
-                    Toast.makeText(MainActivity.this, "enter your name", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                cups = numberPicker.getValue();
-
-                String res = name + "\n"
-                        + ((chocolate + caramel) * cups) + "\n"
-                        + (type * cups);
-
-                Toast.makeText(MainActivity.this, res, Toast.LENGTH_SHORT).show();
-            }
-        });
+        recyclerView.setAdapter(new UsersAdapter(userModelList));
     }
 
-    public void selectType(View view)
+    class UsersAdapter extends RecyclerView.Adapter<UsersViewHolder>
     {
-        RadioButton radioButton = (RadioButton) view;
-        boolean checked = radioButton.isChecked();
+        List<UserModel> list;
 
-        switch (view.getId())
+        public UsersAdapter(List<UserModel> list)
         {
-            case R.id.french_rb:
-                if(checked)
-                type = 7;
-                break;
-            case R.id.turkish_rb:
-                if (checked)
-                type = 5;
-                break;
-            case R.id.espresso_rb:
-                if (checked)
-                type = 10;
-                break;
+            this.list = list;
+        }
+
+        @NonNull
+        @Override
+        public UsersViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
+        {
+            // get recycler view item
+            View view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.user_item, parent, false);
+            return new UsersViewHolder(view);
+        }
+
+        @Override
+        public void onBindViewHolder(@NonNull UsersViewHolder holder, int position)
+        {
+            UserModel userModel = list.get(position);
+
+            String name = userModel.getName();
+            String email = userModel.getEmail();
+
+            holder.nameText.setText(name);
+            holder.emailText.setText(email);
+
+            if (position == list.size() - 1)
+            {
+                holder.divider.setVisibility(View.GONE);
+            }
+        }
+
+        @Override
+        public int getItemCount()
+        {
+            return list.size();
+        }
+    }
+
+    class UsersViewHolder extends RecyclerView.ViewHolder
+    {
+        TextView nameText,emailText;
+        View divider;
+
+        public UsersViewHolder(@NonNull View itemView)
+        {
+            super(itemView);
+
+            nameText = itemView.findViewById(R.id.user_name_text);
+            emailText = itemView.findViewById(R.id.user_email_text);
+            divider = itemView.findViewById(R.id.divider_view);
         }
     }
 }
