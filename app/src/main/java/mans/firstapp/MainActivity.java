@@ -4,7 +4,9 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
+import androidx.room.Room;
 
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -19,15 +21,20 @@ import android.widget.RadioButton;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
+
 import java.util.ArrayList;
 import java.util.List;
 
 import mans.firstapp.models.UserModel;
+import mans.firstapp.network.local.UsersDatabase;
 
 public class MainActivity extends AppCompatActivity
 {
     RecyclerView recyclerView;
-    List<UserModel> userModelList = new ArrayList<>();
+    EditText nameField, emailField;
+    FloatingActionButton floatingActionButton;
+    UsersDatabase usersDatabase;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -40,84 +47,116 @@ public class MainActivity extends AppCompatActivity
 
     private void initViews()
     {
-        recyclerView = findViewById(R.id.user_recycler);
+        floatingActionButton = findViewById(R.id.add_user_fab);
+        recyclerView = findViewById(R.id.users_recycler);
+        nameField = findViewById(R.id.name_field);
+        emailField = findViewById(R.id.email_field);
 
-        userModelList.add(new UserModel("Ahmed", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Ali", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Muhammed", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Abdullah", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Abdo", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Mansour", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Ahmed", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Ali", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Muhammed", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Abdullah", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Abdo", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Mansour", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Ahmed", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Ali", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Muhammed", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Abdullah", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Abdo", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Mansour", "Ahmed@gmail.com"));
+        usersDatabase = Room.databaseBuilder(getApplicationContext(), UsersDatabase.class, "users").build();
 
-        recyclerView.setAdapter(new UsersAdapter(userModelList));
+        new GetAllUsers().execute();
+
+        floatingActionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                String name = nameField.getText().toString();
+                String email = emailField.getText().toString();
+
+                if(name.isEmpty() || email.isEmpty())
+                {
+                    Toast.makeText(MainActivity.this, "invalid data", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                UserModel userModel = new UserModel(name, email);
+
+                new InsertUser().execute(userModel);
+            }
+        });
     }
 
-    class UsersAdapter extends RecyclerView.Adapter<UsersViewHolder>
+    class GetAllUsers extends AsyncTask<Void, Void, List<UserModel>>
     {
-        List<UserModel> list;
+        List<UserModel> userModelList = new ArrayList<>();
 
-        public UsersAdapter(List<UserModel> list)
+        @Override
+        protected List<UserModel> doInBackground(Void... voids)
         {
-            this.list = list;
+            userModelList = usersDatabase.userDao().getUsers();
+            return userModelList;
+        }
+
+        @Override
+        protected void onPostExecute(List<UserModel> userModels)
+        {
+            super.onPostExecute(userModels);
+
+            recyclerView.setAdapter(new UsersAdapter(userModels));
+        }
+    }
+
+    class InsertUser extends AsyncTask<UserModel, Void, Void>
+    {
+        @Override
+        protected Void doInBackground(UserModel... userModels)
+        {
+            usersDatabase.userDao().createUser(userModels[0]);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid)
+        {
+            super.onPostExecute(aVoid);
+
+            new GetAllUsers().execute();
+        }
+    }
+
+    class UsersAdapter extends RecyclerView.Adapter<UsersVH>
+    {
+        List<UserModel> userModels;
+
+        public UsersAdapter(List<UserModel> userModels) {
+            this.userModels = userModels;
         }
 
         @NonNull
         @Override
-        public UsersViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
+        public UsersVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
         {
-            // get recycler view item
             View view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.user_item, parent, false);
-            return new UsersViewHolder(view);
+            return new UsersVH(view);
         }
 
         @Override
-        public void onBindViewHolder(@NonNull UsersViewHolder holder, int position)
+        public void onBindViewHolder(@NonNull UsersVH holder, int position)
         {
-            UserModel userModel = list.get(position);
+            UserModel userModel = userModels.get(position);
 
-            String name = userModel.getName();
-            String email = userModel.getEmail();
+            String name = userModel.getUserName();
+            String email = userModel.getUserEmail();
+            String id = String.valueOf(userModel.getUserId());
 
-            holder.nameText.setText(name);
+            holder.nameText.setText(id + " " + name);
             holder.emailText.setText(email);
-
-            if (position == list.size() - 1)
-            {
-                holder.divider.setVisibility(View.GONE);
-            }
         }
 
         @Override
-        public int getItemCount()
-        {
-            return list.size();
+        public int getItemCount() {
+            return userModels.size();
         }
     }
 
-    class UsersViewHolder extends RecyclerView.ViewHolder
+    class UsersVH extends RecyclerView.ViewHolder
     {
-        TextView nameText,emailText;
-        View divider;
+        TextView emailText, nameText;
 
-        public UsersViewHolder(@NonNull View itemView)
-        {
+        public UsersVH(@NonNull View itemView) {
             super(itemView);
 
             nameText = itemView.findViewById(R.id.user_name_text);
             emailText = itemView.findViewById(R.id.user_email_text);
-            divider = itemView.findViewById(R.id.divider_view);
         }
     }
 }
