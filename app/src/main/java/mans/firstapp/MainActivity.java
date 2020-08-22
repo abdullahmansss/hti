@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.content.Intent;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -42,24 +43,20 @@ public class MainActivity extends AppCompatActivity
     {
         recyclerView = findViewById(R.id.user_recycler);
 
-        userModelList.add(new UserModel("Ahmed", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Ali", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Muhammed", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Abdullah", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Abdo", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Mansour", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Ahmed", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Ali", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Muhammed", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Abdullah", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Abdo", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Mansour", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Ahmed", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Ali", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Muhammed", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Abdullah", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Abdo", "Ahmed@gmail.com"));
-        userModelList.add(new UserModel("Mansour", "Ahmed@gmail.com"));
+        userModelList.add(new UserModel("Ahmed", "Ahmed@gmail.com", "01115342559"));
+        userModelList.add(new UserModel("Ali", "Ahmed@gmail.com", "453453453"));
+        userModelList.add(new UserModel("Muhammed", "Ahmed@gmail.com", "45345345"));
+        userModelList.add(new UserModel("Abdullah", "Ahmed@gmail.com", "8983453"));
+        userModelList.add(new UserModel("Abdo", "Ahmed@gmail.com", "37883453"));
+        userModelList.add(new UserModel("Mansour", "Ahmed@gmail.com", "8764531"));
+        userModelList.add(new UserModel("Ahmed", "Ahmed@gmail.com", "05243453"));
+        userModelList.add(new UserModel("Ali", "Ahmed@gmail.com", "9783543"));
+        userModelList.add(new UserModel("Muhammed", "Ahmed@gmail.com", "453783453"));
+        userModelList.add(new UserModel("Abdullah", "Ahmed@gmail.com", "783453453"));
+        userModelList.add(new UserModel("Abdo", "Ahmed@gmail.com", "01115342559"));
+        userModelList.add(new UserModel("Mansour", "Ahmed@gmail.com", "01115342559"));
+        userModelList.add(new UserModel("Ahmed", "Ahmed@gmail.com", "01115342559"));
+        userModelList.add(new UserModel("Ali", "Ahmed@gmail.com", "01115342559"));
 
         recyclerView.setAdapter(new UsersAdapter(userModelList));
     }
@@ -85,13 +82,24 @@ public class MainActivity extends AppCompatActivity
         @Override
         public void onBindViewHolder(@NonNull UsersViewHolder holder, int position)
         {
-            UserModel userModel = list.get(position);
+            final UserModel userModel = list.get(position);
 
             String name = userModel.getName();
             String email = userModel.getEmail();
 
             holder.nameText.setText(name);
             holder.emailText.setText(email);
+
+            holder.itemView.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    Intent intent = new Intent(getApplicationContext(), DetailsActivity.class);
+                    intent.putExtra("user", userModel);
+                    startActivity(intent);
+                }
+            });
 
             if (position == list.size() - 1)
             {
