@@ -35,6 +35,8 @@ public class MainActivity extends AppCompatActivity
     EditText nameField, emailField;
     FloatingActionButton floatingActionButton;
     UsersDatabase usersDatabase;
+    boolean isUpdate = false;
+    UserModel userModelUpdate;
 
     @Override
     protected void onCreate(Bundle savedInstanceState)
@@ -43,6 +45,36 @@ public class MainActivity extends AppCompatActivity
         setContentView(R.layout.activity_main);
 
         initViews();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
     }
 
     private void initViews()
@@ -70,7 +102,14 @@ public class MainActivity extends AppCompatActivity
 
                 UserModel userModel = new UserModel(name, email);
 
-                new InsertUser().execute(userModel);
+                if(isUpdate)
+                {
+                    Toast.makeText(MainActivity.this, "update", Toast.LENGTH_SHORT).show();
+                    new updateUser().execute(userModelUpdate);
+                } else
+                    {
+                        new InsertUser().execute(userModel);
+                    }
             }
         });
     }
@@ -113,6 +152,42 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
+    class deleteUser extends AsyncTask<UserModel, Void, Void>
+    {
+        @Override
+        protected Void doInBackground(UserModel... userModels)
+        {
+            usersDatabase.userDao().deleteUser(userModels[0]);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid)
+        {
+            super.onPostExecute(aVoid);
+
+            new GetAllUsers().execute();
+        }
+    }
+
+    class updateUser extends AsyncTask<UserModel, Void, Void>
+    {
+        @Override
+        protected Void doInBackground(UserModel... userModels)
+        {
+            usersDatabase.userDao().updateUser(userModels[0]);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid)
+        {
+            super.onPostExecute(aVoid);
+
+            new GetAllUsers().execute();
+        }
+    }
+
     class UsersAdapter extends RecyclerView.Adapter<UsersVH>
     {
         List<UserModel> userModels;
@@ -130,16 +205,38 @@ public class MainActivity extends AppCompatActivity
         }
 
         @Override
-        public void onBindViewHolder(@NonNull UsersVH holder, int position)
+        public void onBindViewHolder(@NonNull UsersVH holder, final int position)
         {
-            UserModel userModel = userModels.get(position);
+            final UserModel userModel = userModels.get(position);
 
-            String name = userModel.getUserName();
-            String email = userModel.getUserEmail();
+            final String name = userModel.getUserName();
+            final String email = userModel.getUserEmail();
             String id = String.valueOf(userModel.getUserId());
 
             holder.nameText.setText(id + " " + name);
             holder.emailText.setText(email);
+
+            holder.itemView.setOnLongClickListener(new View.OnLongClickListener()
+            {
+                @Override
+                public boolean onLongClick(View v)
+                {
+                    new deleteUser().execute(userModel);
+                    return false;
+                }
+            });
+
+            holder.itemView.setOnClickListener(new View.OnClickListener()
+            {
+                @Override
+                public void onClick(View v)
+                {
+                    userModelUpdate = userModel;
+                    isUpdate = true;
+                    emailField.setText(email);
+                    nameField.setText(name);
+                }
+            });
         }
 
         @Override

@@ -1,8 +1,10 @@
 package mans.firstapp.helpers;
 
 import androidx.room.Dao;
+import androidx.room.Delete;
 import androidx.room.Insert;
 import androidx.room.Query;
+import androidx.room.Update;
 
 import java.util.List;
 
@@ -16,4 +18,10 @@ public interface UserDao
 
     @Insert
     void createUser(UserModel userModel);
+
+    @Delete
+    void deleteUser(UserModel userModel);
+
+    @Update
+    void updateUser(UserModel userModel);
 }
