@@ -10,12 +10,14 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.NumberPicker;
 import android.widget.RadioButton;
 import android.widget.TextView;
@@ -31,229 +33,20 @@ import mans.firstapp.network.local.UsersDatabase;
 
 public class MainActivity extends AppCompatActivity
 {
-    RecyclerView recyclerView;
-    EditText nameField, emailField;
-    FloatingActionButton floatingActionButton;
-    UsersDatabase usersDatabase;
-    boolean isUpdate = false;
-    UserModel userModelUpdate;
-
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        initViews();
+        loadFragment();
     }
 
-    @Override
-    protected void onStart() {
-        super.onStart();
-    }
-
-    @Override
-    protected void onResume() {
-        super.onResume();
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-    }
-
-    @Override
-    protected void onPause() {
-        super.onPause();
-    }
-
-    @Override
-    protected void onStop() {
-        super.onStop();
-    }
-
-    @Override
-    protected void onRestart() {
-        super.onRestart();
-    }
-
-    private void initViews()
+    private void loadFragment()
     {
-        floatingActionButton = findViewById(R.id.add_user_fab);
-        recyclerView = findViewById(R.id.users_recycler);
-        nameField = findViewById(R.id.name_field);
-        emailField = findViewById(R.id.email_field);
-
-        usersDatabase = Room.databaseBuilder(getApplicationContext(), UsersDatabase.class, "users").build();
-
-        new GetAllUsers().execute();
-
-        floatingActionButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String name = nameField.getText().toString();
-                String email = emailField.getText().toString();
-
-                if(name.isEmpty() || email.isEmpty())
-                {
-                    Toast.makeText(MainActivity.this, "invalid data", Toast.LENGTH_SHORT).show();
-                    return;
-                }
-
-                UserModel userModel = new UserModel(name, email);
-
-                if(isUpdate)
-                {
-                    Toast.makeText(MainActivity.this, "update", Toast.LENGTH_SHORT).show();
-                    new updateUser().execute(userModelUpdate);
-                } else
-                    {
-                        new InsertUser().execute(userModel);
-                    }
-            }
-        });
-    }
-
-    class GetAllUsers extends AsyncTask<Void, Void, List<UserModel>>
-    {
-        List<UserModel> userModelList = new ArrayList<>();
-
-        @Override
-        protected List<UserModel> doInBackground(Void... voids)
-        {
-            userModelList = usersDatabase.userDao().getUsers();
-            return userModelList;
-        }
-
-        @Override
-        protected void onPostExecute(List<UserModel> userModels)
-        {
-            super.onPostExecute(userModels);
-
-            recyclerView.setAdapter(new UsersAdapter(userModels));
-        }
-    }
-
-    class InsertUser extends AsyncTask<UserModel, Void, Void>
-    {
-        @Override
-        protected Void doInBackground(UserModel... userModels)
-        {
-            usersDatabase.userDao().createUser(userModels[0]);
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid)
-        {
-            super.onPostExecute(aVoid);
-
-            new GetAllUsers().execute();
-        }
-    }
-
-    class deleteUser extends AsyncTask<UserModel, Void, Void>
-    {
-        @Override
-        protected Void doInBackground(UserModel... userModels)
-        {
-            usersDatabase.userDao().deleteUser(userModels[0]);
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid)
-        {
-            super.onPostExecute(aVoid);
-
-            new GetAllUsers().execute();
-        }
-    }
-
-    class updateUser extends AsyncTask<UserModel, Void, Void>
-    {
-        @Override
-        protected Void doInBackground(UserModel... userModels)
-        {
-            usersDatabase.userDao().updateUser(userModels[0]);
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void aVoid)
-        {
-            super.onPostExecute(aVoid);
-
-            new GetAllUsers().execute();
-        }
-    }
-
-    class UsersAdapter extends RecyclerView.Adapter<UsersVH>
-    {
-        List<UserModel> userModels;
-
-        public UsersAdapter(List<UserModel> userModels) {
-            this.userModels = userModels;
-        }
-
-        @NonNull
-        @Override
-        public UsersVH onCreateViewHolder(@NonNull ViewGroup parent, int viewType)
-        {
-            View view = LayoutInflater.from(getApplicationContext()).inflate(R.layout.user_item, parent, false);
-            return new UsersVH(view);
-        }
-
-        @Override
-        public void onBindViewHolder(@NonNull UsersVH holder, final int position)
-        {
-            final UserModel userModel = userModels.get(position);
-
-            final String name = userModel.getUserName();
-            final String email = userModel.getUserEmail();
-            String id = String.valueOf(userModel.getUserId());
-
-            holder.nameText.setText(id + " " + name);
-            holder.emailText.setText(email);
-
-            holder.itemView.setOnLongClickListener(new View.OnLongClickListener()
-            {
-                @Override
-                public boolean onLongClick(View v)
-                {
-                    new deleteUser().execute(userModel);
-                    return false;
-                }
-            });
-
-            holder.itemView.setOnClickListener(new View.OnClickListener()
-            {
-                @Override
-                public void onClick(View v)
-                {
-                    userModelUpdate = userModel;
-                    isUpdate = true;
-                    emailField.setText(email);
-                    nameField.setText(name);
-                }
-            });
-        }
-
-        @Override
-        public int getItemCount() {
-            return userModels.size();
-        }
-    }
-
-    class UsersVH extends RecyclerView.ViewHolder
-    {
-        TextView emailText, nameText;
-
-        public UsersVH(@NonNull View itemView) {
-            super(itemView);
-
-            nameText = itemView.findViewById(R.id.user_name_text);
-            emailText = itemView.findViewById(R.id.user_email_text);
-        }
+        getSupportFragmentManager()
+                .beginTransaction()
+                .add(R.id.fragment_container, new FirstFragment())
+                .commit();
     }
 }
