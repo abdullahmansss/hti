@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/tab1">
+
+    <fragment
+        android:id="@+id/tab1"
+        android:name="mans.firstapp.Tab1"
+        android:label="Tab1" />
+
+    <fragment
+        android:id="@+id/tab2"
+        android:name="mans.firstapp.Tab2"
+        android:label="Tab2" />
+
+    <fragment
+        android:id="@+id/tab3"
+        android:name="mans.firstapp.Tab3"
+        android:label="Tab3" />
+
+    <fragment
+        android:id="@+id/tab4"
+        android:name="mans.firstapp.Tab2"
+        android:label="Tab4" />
+
+</navigation>
