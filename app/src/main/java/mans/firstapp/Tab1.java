@@ -2,10 +2,14 @@ package mans.firstapp;
 
 import android.app.Dialog;
 import android.content.DialogInterface;
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
+import android.view.WindowManager;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -44,47 +48,38 @@ public class Tab1 extends Fragment
             @Override
             public void onClick(View v)
             {
-                showDialog();
+                showCustomDialog();
+                //showDialog();
             }
         });
     }
 
-    public static class userDialog extends DialogFragment
+    private void showCustomDialog()
     {
-        @Override
-        public Dialog onCreateDialog(Bundle savedInstanceState)
-        {
-            // Use the Builder class for convenient dialog construction
-            AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
-            // Get the layout inflater
-            LayoutInflater inflater = requireActivity().getLayoutInflater();
+        AlertDialog.Builder builder = new AlertDialog.Builder(requireContext());
+        LayoutInflater inflater = requireActivity().getLayoutInflater();
+        View view = inflater.inflate(R.layout.user_dialog, null);
 
-            // Inflate and set the layout for the dialog
-            // Pass null as the parent view because its going in the dialog layout
-            builder.setView(inflater.inflate(R.layout.user_dialog, null))
-                    // Add action buttons
-                    .setPositiveButton("Add", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialog, int id) {
-                            // sign in the user ...
-                            dialog.cancel();
+        builder.setView(view);
+        builder.setCancelable(true);
 
-                        }
-                    })
-                    .setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int id)
-                        {
-                            dialog.cancel();
-                        }
-                    });
+        builder.setPositiveButton(
+                "Yes",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
 
-            return builder.create();
-        }
-    }
+        builder.setNegativeButton(
+                "No",
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int id) {
+                        dialog.cancel();
+                    }
+                });
 
-    public void showDialog()
-    {
-        DialogFragment newFragment = new userDialog();
-        newFragment.show(getActivity().getSupportFragmentManager(), "users");
+        AlertDialog alert = builder.create();
+        alert.show();
     }
 }
